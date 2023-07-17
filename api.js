@@ -1,0 +1,1 @@
+export const post = "https://shoponline1231.000webhostapp.com/thongtinkhachhang.php"

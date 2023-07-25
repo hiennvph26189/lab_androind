@@ -1,56 +1,102 @@
 import { StatusBar } from 'expo-status-bar';
 import {React,useState,useEffect} from "react";
-import { StyleSheet, Text, View, TextInput, Button , ScrollView} from 'react-native';
+import { StyleSheet, Text, View, TextInput, Button , ScrollView,Pressable, TouchableOpacity} from 'react-native';
 import axios from "axios";
-import {post} from "./api"
+
 export default function App() {
   const [tenkhachhang, setName]= useState("");
   const [sdt, setPhone]= useState("");
   const [email, setEmail]= useState("");
   const [diachi, setDiachi]= useState("");
   const [arrThongTin, setArrThongTin]= useState([]);
+  const [id, setId]= useState(0);
+
+  
+
   useEffect(()=>{
     getArr();
-    
-  },)
-
-  getArr =async()=>{
-    await axios.get("https://shoponline1231.000webhostapp.com/getThongTin.php").then(res=>{
-        setArrThongTin(res.data);
-    }).catch(err=>{console.log(err)});
-  }
-   submit = async()=>{
-    
-   var bodyFormData = new FormData();
-   bodyFormData.append('tenkhachhang', tenkhachhang);
-   bodyFormData.append('sdt', sdt);
-   bodyFormData.append('email', email);
-   bodyFormData.append('diachi', diachi);
    
-   axios({
-    method: "post",
-    url: "https://shoponline1231.000webhostapp.com/thongtinkhachhang.php",
-    data: bodyFormData,
-    headers: { "Content-Type": "multipart/form-data" },
-  })
-    .then(function (response) {
-      //handle success
-     if(response.data.status == "success"){
-        setName("")
+  },[])
+  const addData = (dataAdd)=>{
+    let datax = JSON.stringify(dataAdd);
+    
+    axios.post("https://memitshop.store/api/donhang",datax).then(res=>{
+      setName("")
+      setDiachi("")
+      setEmail("")
+      setPhone("")
+      getArr()
+    }).catch(err=>{console.log(err)});
+  } 
+  const UpdateItem = ()=>{
+    dataAdd={
+      fullname:tenkhachhang,
+      phone:sdt,
+      email:email,
+      address:diachi,
+      status:1
+    }
+    let datax = JSON.stringify(dataAdd);
+    
+    axios.put("https://memitshop.store/api/donhang/"+id,datax).then(res=>{
+      setName("")
         setDiachi("")
+        setId(0)
         setEmail("")
         setPhone("")
         getArr()
-        console.log(arrThongTin)
-     }
+    }).catch(err=>{console.log(err)});
+  }  
+  // const deleteData = ()=>{
+   
+  //   axios.delete("https://memitshop.store/api/donhang/"+id).then(res=>{
+  //     console.log(res.data)
+  //   }).catch(err=>{console.log(err)});
+  // }
+  getArr =async()=>{
+     axios.get("https://memitshop.store/api/donhang").then(res=>{
+      
+     setArrThongTin(res.data.data)
+    }).catch(err=>{console.log(err)});
+    
+  }
+   submit = async()=>{ 
+   
+    addData({
+      fullname:tenkhachhang,
+      phone:sdt,
+      email:email,
+      address:diachi,
+      status:1
     })
-    .catch(function (response) {
-      //handle error
-      console.log(response);
-    });
-  //  await  axios.post("https://shoponline1231.000webhostapp.com/thongtinkhachhang.php",bodyFormData).then(res =>{
-  //   console.log(res.data)
-  //   }).catch(err=> console.log(err))
+
+
+  }
+  
+  DeleteItem = async()=>{
+    if(id>0){
+      axios.delete("https://memitshop.store/api/donhang/"+id).then(res=>{
+        setName("")
+        setDiachi("")
+        setId(0)
+        setEmail("")
+        setPhone("")
+        getArr()
+      }).catch(err=>{console.log(err)});
+    }
+   
+   
+  }
+  getText =(id)=>{
+    arrThongTin.map((item)=>{
+        if(item.id == id){
+          setName(item.fullname)
+          setDiachi(item.address)
+          setEmail(item.email)
+          setPhone(item.phone)
+          setId(item.id.toString())
+        }
+    })
   }
   return (
     <View style={styles.container}>
@@ -60,6 +106,15 @@ export default function App() {
           placeholder='Nhập tên'
           value={tenkhachhang}
           onChangeText={(text)=>setName(text)}
+        />
+        
+      </View>
+      <View style={{display:"none"}}>
+      <TextInput
+          placeholder='Nhập tên'
+          value={id}
+          onChangeText={(text)=>setId(text)
+          }
         />
       </View>
       <View style={{flexDirection:"row", paddingTop:10,alignItems:"center"}}>
@@ -87,24 +142,50 @@ export default function App() {
           onChangeText={(text)=>setDiachi(text)}
         />
       </View>
-      <Button
+      <View style={{flexDirection:"row", paddingTop:10,alignItems:"center",justifyContent:"center"}}>
+    
+
+      <TouchableOpacity
         onPress={()=>{submit()}}
-        title="Post"
-        color="#841584"
-        
-      />
+       
+       
+        style={{ marginRight: 10, padding: 10, backgroundColor:"#841584",borderRadius:5}}
+      ><Text style={{color: '#fff'}}>POST</Text>
+      </TouchableOpacity>
+
+        <TouchableOpacity
+        onPress={()=>{getArr()}}
+        style={{ marginRight: 10, padding: 10, backgroundColor:"#841584",borderRadius:5}}
+      >
+        <Text style={{color: '#fff'}}>GET</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+        onPress={()=>{UpdateItem()}}
+        style={{ marginRight: 10, padding: 10, backgroundColor:"#841584",borderRadius:5}}
+      >
+        <Text style={{color: '#fff'}}>UPDATE</Text>
+        </TouchableOpacity>
+
+       <TouchableOpacity
+        onPress={()=>{DeleteItem()}}
+        style={{ marginRight: 10, padding: 10, backgroundColor:"#841584",borderRadius:5}}
+      >
+        <Text style={{color: '#fff'}}>DELETE</Text>
+        </TouchableOpacity>
+      </View>
       <ScrollView>
         
           {arrThongTin.map(item=>{
             return(
-              <View key={item.id} style={{marginBottom:20}}>
-              <Text>Tên: {item.tenkhachhang}</Text>
-              <Text>SĐT: {item.sdt}</Text>
+              <TouchableOpacity key={item.id} style={{marginBottom:20}} onPress={()=>{getText(item.id)}} >
+              <Text>Tên: {item.fullname}</Text>
+              <Text>SĐT: {item.phone}</Text>
               <Text>Email: {item.email}</Text>
-              <Text>Địa chỉ: {item.diachi}</Text>
-            </View> 
+              <Text>Địa chỉ: {item.address}</Text>
+            </TouchableOpacity> 
             )
-                  
+
           })}
       </ScrollView>
     </View>
@@ -113,7 +194,7 @@ export default function App() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop:20,
+    paddingTop:30,
     backgroundColor: '#fff',
   
   },

@@ -1,1 +1,2 @@
-export const post = "https://shoponline1231.000webhostapp.com/thongtinkhachhang.php"
+export const post = "http://192.168.1.11:8080/api/get-all-categories"
+export const URL = "http://192.168.1.63:8080"
